@@ -89,18 +89,18 @@ Dataset ini berisi **5.000 baris data** pelanggan dengan total **26 fitur**. Ber
 
 - **Usia rata-rata**: 43,93 tahun  
   Rentang usia pelanggan berkisar antara 18 hingga 70 tahun.
-- **Pendapatan tahunan rata-rata**: Rp 110.500.612  
+- **Pendapatan tahunan rata-rata**:  110.500.612  
   Terdapat variasi besar antar pelanggan (standar deviasi: ±52 juta).
 - **Skor kredit rata-rata**: 574  
   Mengindikasikan tingkat risiko kredit sedang.
 
 ### 💰 Perilaku Keuangan Pelanggan
 
-- **Saldo akun rata-rata**: Rp 50.378  
-  Rentang saldo dari Rp 509 hingga Rp 99.994.
+- **Saldo akun rata-rata**:  50.378  
+  Rentang saldo dari Rp 509 hingga  99.994.
 - **Jumlah transaksi rata-rata**: 10 transaksi  
   Maksimal mencapai 20 transaksi.
-- **Jumlah pinjaman rata-rata**: Rp 7.661  
+- **Jumlah pinjaman rata-rata**:  7.661  
   Banyak pelanggan tidak memiliki pinjaman.
 - **Perubahan saldo akun rata-rata**: Rp 46  
   Terdapat fluktuasi besar antar pelanggan (standar deviasi: ±4.999).
@@ -406,7 +406,15 @@ print("Contoh fitur numerik X_train setelah scaling:\n", X_train_scaled[numeric_
 print("Contoh fitur numerik X_test setelah scaling:\n", X_test_scaled[numeric_cols].head())
 print("Scaler yang digunakan:\n", scaler)
 ```
+### 6 Feature Enginering
+Rekayasa fitur di lakukan menggunakan smote
+Disclaimer terdapat 2 percobaan yang pertama tidak mengunakan smothe dan yang kedua mencoba mengunakan smote karena data di lihat cukup inbalance
 
+```python
+sm = SMOTE(random_state=42)
+X_train_resampled, y_train_resampled = sm.fit_resample(X_train_scaled, y_train)
+```
+smote di lakukan pada data train saja hal ini untuk mencegah kebocoran data
 ## Modeling
 Tahapan ini membahas mengenai model machine learning yang digunakan untuk menyelesaikan permasalahan. Anda perlu menjelaskan tahapan dan parameter yang digunakan pada proses pemodelan.
 ### 1. Logistic Regression
@@ -430,7 +438,7 @@ Tahapan ini membahas mengenai model machine learning yang digunakan untuk menyel
   - Perlu normalisasi data
 
 ### 3. Random Forest Classifier
-- **Parameter**: default  
+- **Parameter**: class_weight='balanced', n_estimators=100, random_state=42  
 - **Kelebihan**:
   - Mampu menangkap hubungan non-linear
   - Robust terhadap outlier dan overfitting
@@ -470,46 +478,177 @@ Pada bagian ini anda perlu menyebutkan metrik evaluasi yang digunakan. Lalu anda
 
 #### 1. Logistic Regression
 - **Kelas 0 (tidak churn)**:
-  - Precision: 0.80
-  - Recall: 0.65
+  - Precision: 0.80  
+  - Recall: 0.65  
+  - F1-score: 0.71
 - **Kelas 1 (churn)**:
-  - Precision: 0.46
-  - Recall: 0.64
+  - Precision: 0.46  
+  - Recall: 0.64  
+  - F1-score: 0.54
 - **Akurasi total**: 65%
 - **Analisis**:  
-  Model ini cukup baik dalam mengenali pelanggan churn (recall 0.64), tetapi precision rendah menunjukkan banyak false positive. Cocok jika ingin menangkap sebanyak mungkin pelanggan yang berisiko churn.
+  Model ini cukup baik dalam mengenali pelanggan churn (recall 0.64), artinya mampu menangkap sebagian besar pelanggan yang benar-benar churn.  
+  Namun, precision-nya rendah (0.46), menandakan cukup banyak false positive (pelanggan yang diprediksi churn, padahal tidak).  
+  F1-score untuk kelas churn adalah 0.54, menunjukkan adanya trade-off antara precision dan recall yang belum optimal.  
+  Akurasi total sebesar 65% menandakan bahwa model ini benar dalam memprediksi sekitar 2 dari 3 kasus, namun belum ideal jika digunakan sebagai dasar keputusan akhir.
 
 ---
 
 #### 2. SVM Classifier
 - **Kelas 0**:
-  - Precision: 0.79
-  - Recall: 0.63
+  - Precision: 0.79  
+  - Recall: 0.63  
+  - F1-score: 0.70
 - **Kelas 1**:
-  - Precision: 0.44
-  - Recall: 0.64
+  - Precision: 0.44  
+  - Recall: 0.64  
+  - F1-score: 0.52
 - **Akurasi total**: 63%
 - **Analisis**:  
-  Performanya mirip Logistic Regression namun akurasinya sedikit lebih rendah. Precision dan F1-score untuk kelas churn masih rendah, menunjukkan tantangan dalam memprediksi pelanggan churn secara akurat.
+  Performanya mirip dengan Logistic Regression. SVM sedikit lebih rendah dari sisi akurasi (63%), namun recall untuk kelas churn tetap 0.64, menunjukkan konsistensi dalam mendeteksi pelanggan yang churn.  
+  F1-score kelas churn juga masih di angka 0.52, memperlihatkan bahwa kemampuan model masih belum optimal untuk menangani ketidakseimbangan data antar kelas.  
+  Model ini juga cenderung menghasilkan false positive yang cukup banyak.
 
 ---
 
 #### 3. Random Forest Classifier
 - **Kelas 0**:
-  - Precision: 0.70
-  - Recall: 0.91
+  - Precision: 0.70  
+  - Recall: 0.91  
+  - F1-score: 0.79
 - **Kelas 1**:
-  - Precision: 0.47
-  - Recall: 0.17
+  - Precision: 0.47  
+  - Recall: 0.17  
+  - F1-score: 0.25
 - **Akurasi total**: 68%
 - **Analisis**:  
-  Meskipun akurasi keseluruhan paling tinggi, model ini **sangat bias terhadap kelas mayoritas** (tidak churn). Recall kelas 1 yang rendah (0.17) menunjukkan model ini gagal mendeteksi sebagian besar pelanggan yang churn.
+  Model ini sangat baik dalam mengenali pelanggan yang tidak churn (recall 0.91), namun sangat buruk dalam mendeteksi pelanggan yang churn (recall hanya 0.17).  
+  F1-score untuk kelas churn sangat rendah (0.25), menunjukkan bahwa model tidak seimbang dan lebih condong ke kelas mayoritas.  
+  Meskipun akurasi total mencapai 68%, ini disebabkan oleh dominasi kelas 0 (tidak churn). Dalam konteks churn prediction, akurasi tinggi saja tidak cukup jika recall kelas churn sangat rendah.
 
-### 🏆 Model Terbaik
+### 🔄 Hasil Evaluasi Model Setelah Feature Engineering (SMOTE)
 
-Berdasarkan metrik evaluasi dan tujuan proyek untuk **mendeteksi pelanggan yang akan churn**, **Logistic Regression** dipilih sebagai model terbaik karena:
-- Memiliki **recall yang cukup tinggi (0.64)** untuk kelas churn, penting untuk mencegah kehilangan pelanggan.
-- Lebih seimbang antara prediksi kelas 0 dan 1.
-- Lebih transparan dan mudah dipahami untuk deployment di lingkungan bisnis.
+#### 1. Logistic Regression
+- **Kelas 0 (tidak churn)**:
+  - Precision: 0.76  
+  - Recall: 0.67  
+  - F1-score: 0.72
+- **Kelas 1 (churn)**:
+  - Precision: 0.44  
+  - Recall: 0.55  
+  - F1-score: 0.49
+- **Akurasi total**: 64%
+- **Analisis**:  
+  Setelah penerapan SMOTE, model Logistic Regression menunjukkan peningkatan F1-score untuk kelas churn menjadi 0.49 dari sebelumnya 0.54, meskipun terjadi sedikit penurunan pada recall kelas 1.  
+  Model menjadi lebih seimbang dalam memprediksi kedua kelas, namun precision untuk churn masih cukup rendah sehingga perlu perhatian untuk mengurangi false positive.
+
+---
+
+#### 2. Random Forest Classifier
+- **Kelas 0**:
+  - Precision: 0.74  
+  - Recall: 0.74  
+  - F1-score: 0.74
+- **Kelas 1**:
+  - Precision: 0.44  
+  - Recall: 0.44  
+  - F1-score: 0.44
+- **Akurasi total**: 64%
+- **Analisis**:  
+  SMOTE membantu menyeimbangkan prediksi antara kelas, ditunjukkan oleh recall dan precision yang hampir setara untuk kelas churn.  
+  Meskipun F1-score untuk churn hanya 0.44, ini merupakan peningkatan signifikan dibandingkan sebelum SMOTE (yang hanya 0.25). Model kini lebih adil dalam memproses kedua kelas.
+
+---
+
+#### 3. SVM Classifier
+- **Kelas 0**:
+  - Precision: 0.77  
+  - Recall: 0.65  
+  - F1-score: 0.71
+- **Kelas 1**:
+  - Precision: 0.44  
+  - Recall: 0.59  
+  - F1-score: 0.50
+- **Akurasi total**: 63%
+- **Analisis**:  
+  Performa SVM meningkat pada kelas churn, terlihat dari naiknya recall menjadi 0.59 dan F1-score menjadi 0.50.  
+  Ini berarti model lebih berhasil menangkap pelanggan churn dengan lebih baik, meskipun precision-nya masih tergolong rendah.  
+  Akurasi keseluruhan hampir sama, namun distribusi prediksi kelas menjadi lebih seimbang.
+
+---
+
+#### 4. Neural Network
+- **Kelas 0**:
+  - Precision: 0.80  
+  - Recall: 0.60  
+  - F1-score: 0.69
+- **Kelas 1**:
+  - Precision: 0.44  
+  - Recall: 0.69  
+  - F1-score: 0.54
+- **Akurasi total**: 63%
+- **Analisis**:  
+  Model Neural Network menunjukkan **recall tertinggi untuk kelas churn (0.69)** dibanding model lainnya.  
+  Ini sangat bermanfaat jika tujuan utama adalah mendeteksi pelanggan yang kemungkinan besar akan churn.  
+  F1-score kelas churn juga paling tinggi di antara semua model (0.54), menjadikannya kandidat kuat meskipun akurasi keseluruhan tetap 63%.
+
+---
+
+
+| Model                  | Accuracy (Before) | F1-score Churn (Before) | Recall Churn (Before) | Accuracy (After) | F1-score Churn (After) | Recall Churn (After) |
+|------------------------|------------------|--------------------------|------------------------|------------------|-------------------------|-----------------------|
+| Logistic Regression    | 65%              | 0.54                     | 0.64                   | 64%              | 0.49                    | 0.55                  |
+| SVM Classifier         | 63%              | 0.52                     | 0.64                   | 63%              | 0.50                    | 0.59                  |
+| Random Forest          | 68%              | 0.25                     | 0.17                   | 64%              | 0.44                    | 0.44                  |
+| Neural Network         | -                | -                        | -                      | 63%              | 0.54                    | 0.69                  |
+
+> **Catatan**: Neural Network hanya diuji setelah SMOTE, tidak ada data sebelum.
+
+---
+
+## ✅ Kesimpulan
+
+- **Random Forest** mengalami **peningkatan paling signifikan** pada kelas churn setelah SMOTE, dari f1-score 0.25 menjadi 0.44 dan recall dari 0.17 ke 0.44.
+- **Neural Network** mencatat **recall tertinggi untuk kelas churn** (0.69) dan **f1-score tertinggi (0.54)**, menjadikannya sangat baik jika tujuan utama adalah **mendeteksi sebanyak mungkin pelanggan yang churn**.
+- **SVM** dan **Logistic Regression** memiliki kinerja stabil, namun tidak mengalami peningkatan besar setelah SMOTE.
+- **Accuracy tertinggi sebelum SMOTE** dicapai oleh **Random Forest (68%)**, namun tidak seimbang dalam mendeteksi churn.
+- **Setelah SMOTE**, semua model mengalami penurunan accuracy karena trade-off dalam meningkatkan kemampuan mengenali kelas minoritas (churn).
+
+### 🏆 Model Terbaik:
+
+- **Neural Network adalah pilihan terbaik**, karena memiliki recall dan f1-score tertinggi untuk kelas churn.
+
+## 📌 Jawaban terhadap Problem Statement
+📊 **Hasil modeling menunjukkan bahwa:**
+
+- Model **tanpa SMOTE** cenderung bias ke kelas mayoritas (tidak churn), sehingga **kurang mampu mengenali pelanggan yang benar-benar akan churn**.
+- Model **dengan SMOTE**, terutama **Neural Network dan Random Forest**, mengalami **peningkatan signifikan dalam mendeteksi pelanggan churn** melalui **recall dan F1-score yang lebih tinggi**.
+
+🔍 Hal ini menunjukkan bahwa model yang dibangun dapat **digunakan oleh pihak bank untuk mengantisipasi churn lebih dini**, sesuai dengan kebutuhan bisnis untuk efisiensi dan fokus retensi pelanggan.
+
+---
+
+
+#### 🧩 Masalah 1: Bagaimana mengidentifikasi pelanggan yang berpotensi churn?
+✔️ **Terjawab** melalui model klasifikasi seperti:
+- Logistic Regression
+- Support Vector Machine (SVM)
+- Random Forest
+- Artificial Neural Network (ANN)
+
+Model-model tersebut mampu **membedakan pelanggan churn dan tidak churn**, terutama setelah diterapkan **SMOTE** untuk mengatasi data imbalance.
+
+- **Model terbaik** dalam mengidentifikasi pelanggan churn adalah **Neural Network dengan SMOTE**, berdasarkan **recall dan F1-score tertinggi**.
+
+#### 🧩 Masalah 2: Fitur apa yang paling berpengaruh terhadap churn?
+✔️ **Sebagian terjawab** melalui analisis distribusi fitur terhadap churn:
+
+- **Jumlah keluhan**, **aktivitas akun menurun**, dan **interaksi dengan CS** yang tinggi → lebih berisiko churn.
+
+
+#### 🧩 Masalah 3: Algoritma mana yang paling efektif untuk data imbalanced?
+✔️ **Terjawab** melalui perbandingan performa model:
+- **Neural Network dengan SMOTE** menunjukkan performa terbaik berdasarkan **recall dan F1-score**.
+- **Random Forest dengan SMOTE** juga memberikan hasil yang kompetitif dan stabil.
 
 **---Ini adalah bagian akhir laporan---**
